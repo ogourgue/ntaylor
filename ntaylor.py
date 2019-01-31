@@ -96,7 +96,7 @@ def get_statn(x0, x):
 
 ################################################################################
 
-def diagn(ax, statn, prop, legend, title = '', sigma_lim = 1.5, \
+def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
           sigma_color = 'k', crmse_color = 'C0', r_color = 'C2', \
           no_sigma_axis = False, no_crmse_axis = False):
 
@@ -106,12 +106,17 @@ def diagn(ax, statn, prop, legend, title = '', sigma_lim = 1.5, \
   input:
   ax: figure axes
   statn: normalized statistic array of shape (m, 6) from get_statn()
-  prop: 2d list of shape (m, 3), with prop[i] = [marker, markerfacecolor, markeredgecolor] of data i
-  legend: 2d list of shape (n, 3), with legend[i] = [marker, markerfacecolor, markeredgecolor, legend] of data i in the legend: for flexibility sake, data in legend can be different from data in diagram
+  prop: object array of shape (m, 3), with prop[i, :] = [marker, markerfacecolor, markeredgecolor] of data i
+  legend: object array of shape (n, 3), with legend[i] = [marker, markerfacecolor, markeredgecolor, legend] of data i in the legend (for sake of flexibility, data in legend can be different from data in diagram)
 
   # input (not mandatory):
   title: title on top of the diagram
-
+  sigma_lim: maximum value of normalized standard deviation (and hence normalized centered root mean square error) displayed on the diagram
+  sigma_color: color for normalized standard deviation on the diagram
+  crmse_color: color for normalized centered root mean square error on the diagram
+  r_color: color of correlation coefficient on the diagram
+  no_sigma_axis: if True, remove ticks and label of normalized standard deviation axis
+  no_crmse_axis: if True, remove ticks and label of normalized centered root mean square error axis
 
   output:
   ax: figure axes
@@ -196,21 +201,22 @@ def diagn(ax, statn, prop, legend, title = '', sigma_lim = 1.5, \
   y = rho * np.sin(theta)
   for i in range(len(x)):
     if rho[i] < 1.5:
-      plt.plot(x[i], y[i], marker = prop[i][0], \
-                           markerfacecolor = prop[i][1], \
-                           markeredgecolor = prop[i][2])
+      plt.plot(x[i], y[i], marker = prop[i, 0], \
+                           markerfacecolor = prop[i, 1], \
+                           markeredgecolor = prop[i, 2])
 
   # legend
-  for i in range(len(legend)):
-    plt.plot(-1., -1., '.', marker = legend[i][0], \
-                            markerfacecolor = legend[i][1], \
-                            markeredgecolor = legend[i][2], \
-                            label = legend[i][3])
-  if len(legend) > 0:
-    if len(legend) < 12:
-      plt.legend(bbox_to_anchor=(1.01, 1.), loc = 'upper left')
-    else:
-      plt.legend(bbox_to_anchor=(1.03, 1.), loc = 'upper left')
+  if legend is not None:
+    for i in range(legend.shape[0]):
+      plt.plot(-1., -1., '.', marker = legend[i, 0], \
+                              markerfacecolor = legend[i, 1], \
+                              markeredgecolor = legend[i, 2], \
+                              label = legend[i][3])
+    if legend.shape[0] > 0:
+      if legend.shape[0] < 12:
+        plt.legend(bbox_to_anchor=(1.01, 1.), loc = 'upper left')
+      else:
+        plt.legend(bbox_to_anchor=(1.03, 1.), loc = 'upper left')
 
   # title
   if title is not '':
