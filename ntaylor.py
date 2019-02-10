@@ -98,7 +98,8 @@ def get_statn(x0, x):
 
 def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
           sigma_color = 'k', crmse_color = 'C0', r_color = 'C2', \
-          no_sigma_axis = False, no_crmse_axis = False):
+          no_sigma_axis = False, no_crmse_axis = False, \
+          legend_horizontal_anchor = 1):
 
   """
   create a normalized taylor diagram
@@ -117,6 +118,7 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
   r_color: color of correlation coefficient on the diagram
   no_sigma_axis: if True, remove ticks and label of normalized standard deviation axis
   no_crmse_axis: if True, remove ticks and label of normalized centered root mean square error axis
+  legend_horizontal_anchor: increase default value (1) to shift legend to the right
 
   output:
   ax: figure axes
@@ -213,10 +215,8 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
                               markeredgecolor = legend[i, 2], \
                               label = legend[i][3])
     if legend.shape[0] > 0:
-      if legend.shape[0] < 12:
-        plt.legend(bbox_to_anchor=(1.01, 1.), loc = 'upper left')
-      else:
-        plt.legend(bbox_to_anchor=(1.03, 1.), loc = 'upper left')
+      plt.legend(bbox_to_anchor = (legend_horizontal_anchor, 1), \
+                 loc = 'upper left')
 
   # title
   if title is not '':
