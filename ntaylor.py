@@ -11,7 +11,7 @@ def get_stat(x0, x):
 
   input:
   x0: array of shape (n)
-  x: array of shape (m, n)
+  x: array of shape (m, n) or (n)
 
   output:
   stat0: reference statistic array of shape (6)
@@ -29,6 +29,10 @@ def get_stat(x0, x):
 
   # all statistics
   stat0 = np.array([s0, 0., 0., 0., sigma0, 1.])
+
+  # reshape x if only 1 dimension
+  if x.ndim == 1:
+    x = np.reshape(x, (1, x.shape[0]))
 
   # initialization
   stat = np.zeros((x.shape[0], 6))
