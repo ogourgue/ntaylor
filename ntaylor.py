@@ -1,5 +1,6 @@
-import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 ################################################################################
@@ -103,7 +104,7 @@ def get_statn(x0, x):
 def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
           sigma_color = 'k', crmse_color = 'C0', r_color = 'C2', \
           no_sigma_axis = False, no_crmse_axis = False, \
-          legend_horizontal_anchor = 1):
+          legend_horizontal_anchor = 1, legend_title = None):
 
   """
   create a normalized taylor diagram
@@ -128,12 +129,17 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
   ax: figure axes
   """
 
+  # get fontsize
+  fontsize = matplotlib.rcParams.get('font.size')
+  if fontsize not in [10, 20]:
+    print('Warning! Taylor diagrams not optimized for that font size')
+
   # initialize figure
   plt.axis('square')
-  plt.xlim([0., 1.01 * sigma_lim])
-  plt.ylim([0., 1.01 * sigma_lim])
   ax.spines['right'].set_visible(False)
   ax.spines['top'].set_visible(False)
+  plt.xlim([0., 1.08 * sigma_lim])
+  plt.ylim([0., 1.06 * sigma_lim])
 
   # standard deviation
   for rho in np.arange(.25, sigma_lim + .125, .25):
@@ -144,7 +150,10 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
       plt.plot(x, y, color = sigma_color, linewidth = 1.)
     else:
       plt.plot(x, y, '--', color = sigma_color, linewidth = .5)
-  plt.yticks(np.arange(0., sigma_lim + .125, .25))
+  if fontsize == 20:
+    plt.yticks(np.arange(0.25, sigma_lim + .125, .25))
+  else: # default font size is 10
+    plt.yticks(np.arange(0., sigma_lim + .125, .25))
   ax.spines['left'].set_color(sigma_color)
   if no_sigma_axis:
     yticks = ax.get_yticks()
@@ -165,8 +174,12 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
     y = y[x <= (1. + sigma_lim ** 2. - rho ** 2) * 0.5]
     x = x[x <= (1. + sigma_lim ** 2. - rho ** 2) * 0.5]
     plt.plot(x, y, '--', color = crmse_color, linewidth = .5)
-  plt.xticks(np.arange(0., 1.125, .25), \
-             ['1.00', '0.75', '0.50', '0.25', '0.00'])
+  if fontsize == 20:
+    plt.xticks(np.arange(0., 1.125, .5), \
+               ['1.0', '0.5', '0.0'])
+  else: # default font size is 10
+    plt.xticks(np.arange(0., 1.125, .25), \
+               ['1.00', '0.75', '0.50', '0.25', '0.00'])
   ax.spines['bottom'].set_color(crmse_color)
   ax.tick_params(axis = 'x', colors = crmse_color)
   ax.xaxis.label.set_color(crmse_color)
@@ -184,15 +197,25 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
     x = sigma_lim * theta
     y = sigma_lim * np.sin(np.arccos(theta))
     plt.plot([0., x], [0., y], ':', color = r_color, linewidth = .5)
-    if theta < .95:
-      coef = 1.04
-    else:
-      coef = 1.05
+    if fontsize == 20:
+      if theta < .95:
+        coef = 1.075
+      else:
+        coef = 1.1
+    else: # default font size is 10
+      if theta < .95:
+        coef = 1.04
+      else:
+        coef = 1.05
     ax.text(coef * x, coef * y, str(theta), verticalalignment = 'center', \
             horizontalalignment = 'center', \
             rotation = np.degrees(np.arccos(theta)), color = r_color)
-  x = 1.1 * sigma_lim * np.cos(np.pi / 4.)
-  y = 1.1 * sigma_lim * np.sin(np.pi / 4.)
+  if fontsize == 20:
+    x = 1.2 * sigma_lim * np.cos(np.pi / 4.)
+    y = 1.2 * sigma_lim * np.sin(np.pi / 4.)
+  else: # default font size is 10
+    x = 1.1 * sigma_lim * np.cos(np.pi / 4.)
+    y = 1.1 * sigma_lim * np.sin(np.pi / 4.)
   ax.text(x, y, 'correlation coefficient', verticalalignment = 'center', \
           horizontalalignment = 'center', \
           rotation = -45., color = r_color)
@@ -220,10 +243,16 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
                               label = legend[i][3])
     if legend.shape[0] > 0:
       plt.legend(bbox_to_anchor = (legend_horizontal_anchor, 1), \
-                 loc = 'upper left')
+                 loc = 'upper left', title = legend_title)
 
   # title
+  titlesize = matplotlib.rcParams.get('axes.titlesize')
   if title is not '':
-    plt.text(.75, 1.65, title, horizontalalignment = 'center')
+    if fontsize == 20:
+      plt.text(.75, 1.85, title, horizontalalignment = 'center', \
+               fontsize = titlesize)
+    else: # default font size is 10
+      plt.text(.75, 1.65, title, horizontalalignment = 'center', \
+               fontsize = titlesize)
 
   return ax
