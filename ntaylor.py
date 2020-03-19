@@ -1,22 +1,38 @@
+""" NTaylor: Normalized Taylor Diagrams
+
+This module allows to generate normalized Taylor diagrams
+
+References:
+Taylor, K. E. (2001). Summarizing multiple aspects of model performance in a single diagram. Journal of Geophysical Research: Atmospheres, 106, 7183–7192. doi: 10.1029/2000JD900719
+Kärnä, T., & Baptista, A. M. (2016). Evaluation of a long-term hindcast simulation for the Columbia River estuary. Ocean Modelling, 99, 1–14. doi: 10.1016/j.ocemod.2015.12.007
+
+Author: Olivier Gourgue
+       (University of Antwerp, Belgium & Boston University, MA, United States)
+
+"""
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
 
+
+################################################################################
+# get statistics ###############################################################
 ################################################################################
 
 def get_stat(x0, x):
 
-  """
-  calculate different statistics (mean, bias, root mean square error, centered root mean square error, standard deviation, correlation coefficient) from x (test dataset), with regards to x0 (reference dataset)
+  """ Calculate mean, bias, root mean square error, centered root mean square error, standard deviation and correlation coefficient of x (test dataset) in comparison with x0 (reference dataset)
 
-  input:
-  x0: array of shape (n)
-  x: array of shape (m, n) or (n)
+  Required parameters:
+  x0 (NumPy array of shape (n)): reference dataset
+  x (NumPy array of shape (n) or (m, n)): test dataset(s)
 
-  output:
-  stat0: reference statistic array of shape (6)
-  stat: statistic array of shape (m, 6)
+  Returns:
+  NumPy array of shape (6): statistics of the reference dataset
+  NumPy array of shape (m, 6): statistics of the test dataset (m = 1 if x of shape (n))
+
   """
 
   # number of data
@@ -73,19 +89,22 @@ def get_stat(x0, x):
   return stat0, stat
 
 
+
+################################################################################
+# get normalized statistics ####################################################
 ################################################################################
 
 def get_statn(x0, x):
 
-  """
-  calculate different statistics (mean, bias, root mean square error, normalized centered root mean square error, normalized standard deviation, correlation coefficient) from x (test dataset), with regards to x0 (reference dataset)
+  """ Calculate mean, bias, root mean square error, normalized centered root mean square error, normalized standard deviation and correlation coefficient of x (test dataset), in comparison with x0 (reference dataset)
 
-  input:
-  x0: array of shape (n)
-  x: array of shape (m, n)
+  Required parameters:
+  x0 (NumPy array of shape (n)): reference dataset
+  x (NumPy array of shape (n) or (m, n)): test dataset(s)
 
-  output:
-  statn: normalized statistic array of shape (m, 6)
+  Returns:
+  NumPy array of shape (m, 6): normalized statistics of the test dataset (m = 1 if x of shape (n))
+
   """
 
   # all statistics
@@ -99,47 +118,43 @@ def get_statn(x0, x):
   return statn
 
 
+
+################################################################################
+# normalized diagram ###########################################################
 ################################################################################
 
-def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
-          sigma_color = 'k', crmse_color = 'C0', r_color = 'C2', \
-          no_sigma_axis = False, no_crmse_axis = False, \
-          legend_horizontal_anchor = 1, legend_title = None):
+def diagn(ax, statn, prop, sigma_lim = 1.5, sigma_color = 'k', \
+          crmse_color = 'C8', r_color = 'C9', no_sigma_axis = False, \
+          no_crmse_axis = False, r_label = 'correlation coefficient'):
+
+  """ Create a normalized Taylor diagram
+
+  Required parameters:
+  ax (figure axis)
+  statn (NumPy array of shape (m, 6)): normalized statistics from get_statn()
+  prop: (NumPy array of shape (m, 3) and type object):
+    --> prop[i, :] = [marker, markerfacecolor, markeredgecolor] of dataset i
+
+  # Optional parameters
+  sigma_lim (float, default = 1.5): maximum displayed value of the normalized standard deviation
+  sigma_color (color, default is 'k'): color for the normalized standard deviation on the diagram
+  crmse_color (color, default is 'C8'): color for the normalized centered root mean square error on the diagram
+  r_color (color, default is 'C9'): color of correlation coefficient on the diagram
+  no_sigma_axis (logical, default is False): no tick and label for the normalized standard deviation if True
+  no_crmse_axis (logical, default is False): no tick and label for the normalized centered root mean square error if True
+  r_label (string, default is 'correlation coefficient'): label for the correlation coefficient
+
+  Returns:
+  figure axis
 
   """
-  create a normalized taylor diagram
-
-  input:
-  ax: figure axes
-  statn: normalized statistic array of shape (m, 6) from get_statn()
-  prop: object array of shape (m, 3), with prop[i, :] = [marker, markerfacecolor, markeredgecolor] of data i
-  legend: object array of shape (n, 3), with legend[i] = [marker, markerfacecolor, markeredgecolor, legend] of data i in the legend (for sake of flexibility, data in legend can be different from data in diagram)
-
-  # input (not mandatory):
-  title: title on top of the diagram
-  sigma_lim: maximum value of normalized standard deviation (and hence normalized centered root mean square error) displayed on the diagram
-  sigma_color: color for normalized standard deviation on the diagram
-  crmse_color: color for normalized centered root mean square error on the diagram
-  r_color: color of correlation coefficient on the diagram
-  no_sigma_axis: if True, remove ticks and label of normalized standard deviation axis
-  no_crmse_axis: if True, remove ticks and label of normalized centered root mean square error axis
-  legend_horizontal_anchor: increase default value (1) to shift legend to the right
-
-  output:
-  ax: figure axes
-  """
-
-  # get fontsize
-  fontsize = matplotlib.rcParams.get('font.size')
-  if fontsize not in [10, 20]:
-    print('Warning! Taylor diagrams not optimized for that font size')
 
   # initialize figure
-  plt.axis('square')
+  ax.axis('square')
   ax.spines['right'].set_visible(False)
   ax.spines['top'].set_visible(False)
-  plt.xlim([0., 1.08 * sigma_lim])
-  plt.ylim([0., 1.06 * sigma_lim])
+  ax.set_xlim([0., 1.02 * sigma_lim])
+  ax.set_ylim([0., 1.02 * sigma_lim])
 
   # standard deviation
   for rho in np.arange(.25, sigma_lim + .125, .25):
@@ -147,13 +162,10 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
     x = rho * np.cos(theta);
     y = rho * np.sin(theta);
     if rho == 1.:
-      plt.plot(x, y, color = sigma_color, linewidth = 1.)
+      ax.plot(x, y, color = sigma_color, linewidth = .8)
     else:
-      plt.plot(x, y, '--', color = sigma_color, linewidth = .5)
-  if fontsize == 20:
-    plt.yticks(np.arange(0.25, sigma_lim + .125, .25))
-  else: # default font size is 10
-    plt.yticks(np.arange(0., sigma_lim + .125, .25))
+      ax.plot(x, y, '--', color = sigma_color, linewidth = .5)
+  ax.set_yticks(np.arange(0., sigma_lim + .125, .25))
   ax.spines['left'].set_color(sigma_color)
   if no_sigma_axis:
     yticks = ax.get_yticks()
@@ -162,7 +174,7 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
       yticklabels.append('')
     ax.set_yticklabels(yticklabels)
   else:
-    plt.ylabel('normalized standard deviation')
+    ax.set_ylabel('normalized standard deviation')
 
   # centered root mean square error
   for rho in np.arange(0.25, 1.125, 0.25):
@@ -173,13 +185,9 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
     # remove what is out of sigma_lim circle
     y = y[x <= (1. + sigma_lim ** 2. - rho ** 2) * 0.5]
     x = x[x <= (1. + sigma_lim ** 2. - rho ** 2) * 0.5]
-    plt.plot(x, y, '--', color = crmse_color, linewidth = .5)
-  if fontsize == 20:
-    plt.xticks(np.arange(0., 1.125, .5), \
-               ['1.0', '0.5', '0.0'])
-  else: # default font size is 10
-    plt.xticks(np.arange(0., 1.125, .25), \
-               ['1.00', '0.75', '0.50', '0.25', '0.00'])
+    ax.plot(x, y, '--', color = crmse_color, linewidth = .5)
+  ax.set_xticks(np.arange(0., 1.625, .25))
+  ax.set_xticklabels(['1.00', '0.75', '0.50', '0.25', '0.00', '0.25', '0.50'])
   ax.spines['bottom'].set_color(crmse_color)
   ax.tick_params(axis = 'x', colors = crmse_color)
   ax.xaxis.label.set_color(crmse_color)
@@ -190,38 +198,24 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
       xticklabels.append('')
     ax.set_xticklabels(xticklabels)
   else:
-    plt.xlabel('normalized centered root mean square error')
+    ax.set_xlabel('normalized centered root mean square error')
 
   # correlation coefficient lines
   for theta in [.1, .2, .3, .4, .5, .6, .7, .8, .9, .95, .99]:
-    x = sigma_lim * theta
-    y = sigma_lim * np.sin(np.arccos(theta))
-    plt.plot([0., x], [0., y], ':', color = r_color, linewidth = .5)
-    if fontsize == 20:
-      if theta < .95:
-        coef = 1.075
-      else:
-        coef = 1.1
-    else: # default font size is 10
-      if theta < .95:
-        coef = 1.04
-      else:
-        coef = 1.05
-    ax.text(coef * x, coef * y, str(theta), verticalalignment = 'center', \
-            horizontalalignment = 'center', \
-            rotation = np.degrees(np.arccos(theta)), color = r_color)
-  if fontsize == 20:
-    x = 1.2 * sigma_lim * np.cos(np.pi / 4.)
-    y = 1.2 * sigma_lim * np.sin(np.pi / 4.)
-  else: # default font size is 10
-    x = 1.1 * sigma_lim * np.cos(np.pi / 4.)
-    y = 1.1 * sigma_lim * np.sin(np.pi / 4.)
-  ax.text(x, y, 'correlation coefficient', verticalalignment = 'center', \
-          horizontalalignment = 'center', \
-          rotation = -45., color = r_color)
+    x = 1.02 * sigma_lim * theta
+    y = 1.02 * sigma_lim * np.sin(np.arccos(theta))
+    ax.plot([0., x], [0., y], ':', color = r_color, linewidth = .5)
+    ax.text(x / 1.02 * 1.03, y / 1.02 * 1.03, str(theta), \
+            verticalalignment = 'center', horizontalalignment = 'left', \
+            rotation = np.degrees(np.arccos(theta)), rotation_mode = 'anchor', \
+            color = r_color)
+  x = 1.15 * sigma_lim * np.cos(np.pi / 4.)
+  y = 1.15 * sigma_lim * np.sin(np.pi / 4.)
+  ax.text(x, y, r_label, verticalalignment = 'center', \
+          horizontalalignment = 'center', rotation = -45., color = r_color)
 
   # target point
-  plt.plot(1., 0., 'ko')
+  ax.plot(1., 0., 'ko')
 
   # data points
   rho = statn[:, 4]
@@ -230,29 +224,8 @@ def diagn(ax, statn, prop, legend = None, title = '', sigma_lim = 1.5, \
   y = rho * np.sin(theta)
   for i in range(len(x)):
     if rho[i] < 1.5:
-      plt.plot(x[i], y[i], marker = prop[i, 0], \
-                           markerfacecolor = prop[i, 1], \
-                           markeredgecolor = prop[i, 2])
-
-  # legend
-  if legend is not None:
-    for i in range(legend.shape[0]):
-      plt.plot(-1., -1., '.', marker = legend[i, 0], \
-                              markerfacecolor = legend[i, 1], \
-                              markeredgecolor = legend[i, 2], \
-                              label = legend[i][3])
-    if legend.shape[0] > 0:
-      plt.legend(bbox_to_anchor = (legend_horizontal_anchor, 1), \
-                 loc = 'upper left', title = legend_title)
-
-  # title
-  titlesize = matplotlib.rcParams.get('axes.titlesize')
-  if title is not '':
-    if fontsize == 20:
-      plt.text(.75, 1.85, title, horizontalalignment = 'center', \
-               fontsize = titlesize)
-    else: # default font size is 10
-      plt.text(.75, 1.65, title, horizontalalignment = 'center', \
-               fontsize = titlesize)
+      ax.plot(x[i], y[i], marker = prop[i, 0], \
+                          markerfacecolor = prop[i, 1], \
+                          markeredgecolor = prop[i, 2])
 
   return ax
