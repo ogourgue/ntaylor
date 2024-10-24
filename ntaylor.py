@@ -11,7 +11,7 @@ Author: Olivier Gourgue
 
 """
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -123,9 +123,10 @@ def get_statn(x0, x):
 # normalized diagram ###########################################################
 ################################################################################
 
-def diagn(ax, statn, prop, sigma_lim = 1.5, sigma_color = 'k', \
-          crmse_color = 'C8', r_color = 'C9', no_sigma_axis = False, \
-          no_crmse_axis = False, r_label = 'correlation coefficient'):
+def diagn(ax, statn, prop, sigma_lim = 1.5, sigma_color = 'k',
+          crmse_color = 'C8', r_color = 'C9', no_sigma_axis = False,
+          no_crmse_axis = False, r_label = 'correlation coefficient',
+          target_color = 'k'):
 
   """ Create a normalized Taylor diagram
 
@@ -149,6 +150,9 @@ def diagn(ax, statn, prop, sigma_lim = 1.5, sigma_color = 'k', \
 
   """
 
+  # axes linewidth
+  linewidth = mpl.rcParams['axes.linewidth']
+
   # initialize figure
   ax.axis('square')
   ax.spines['right'].set_visible(False)
@@ -162,9 +166,9 @@ def diagn(ax, statn, prop, sigma_lim = 1.5, sigma_color = 'k', \
     x = rho * np.cos(theta);
     y = rho * np.sin(theta);
     if rho == 1.:
-      ax.plot(x, y, color = sigma_color, linewidth = .8)
+      ax.plot(x, y, color = sigma_color, linewidth = linewidth)
     else:
-      ax.plot(x, y, '--', color = sigma_color, linewidth = .5)
+      ax.plot(x, y, '--', color = sigma_color, linewidth = linewidth)
   ax.set_yticks(np.arange(0., sigma_lim + .125, .25))
   ax.spines['left'].set_color(sigma_color)
   if no_sigma_axis:
@@ -185,7 +189,7 @@ def diagn(ax, statn, prop, sigma_lim = 1.5, sigma_color = 'k', \
     # remove what is out of sigma_lim circle
     y = y[x <= (1. + sigma_lim ** 2. - rho ** 2) * 0.5]
     x = x[x <= (1. + sigma_lim ** 2. - rho ** 2) * 0.5]
-    ax.plot(x, y, '--', color = crmse_color, linewidth = .5)
+    ax.plot(x, y, '--', color = crmse_color, linewidth = linewidth)
   ax.set_xticks(np.arange(0., 1.625, .25))
   ax.set_xticklabels(['1.00', '0.75', '0.50', '0.25', '0.00', '0.25', '0.50'])
   ax.spines['bottom'].set_color(crmse_color)
@@ -204,7 +208,7 @@ def diagn(ax, statn, prop, sigma_lim = 1.5, sigma_color = 'k', \
   for theta in [.1, .2, .3, .4, .5, .6, .7, .8, .9, .95, .99]:
     x = 1.02 * sigma_lim * theta
     y = 1.02 * sigma_lim * np.sin(np.arccos(theta))
-    ax.plot([0., x], [0., y], ':', color = r_color, linewidth = .5)
+    ax.plot([0., x], [0., y], ':', color = r_color, linewidth = linewidth)
     ax.text(x / 1.02 * 1.03, y / 1.02 * 1.03, str(theta), \
             verticalalignment = 'center', horizontalalignment = 'left', \
             rotation = np.degrees(np.arccos(theta)), rotation_mode = 'anchor', \
@@ -215,7 +219,7 @@ def diagn(ax, statn, prop, sigma_lim = 1.5, sigma_color = 'k', \
           horizontalalignment = 'center', rotation = -45., color = r_color)
 
   # target point
-  ax.plot(1., 0., 'ko')
+  ax.plot(1., 0., 'o', color = target_color)
 
   # data points
   rho = statn[:, 4]
